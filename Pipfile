@@ -8,6 +8,9 @@ django = "*"
 psycopg2-binary = "*"
 djangorestframework = "*"
 plotly = "*"
+dj-database-url = "*"
+gunicorn = "*"
+whitenoise = "*"
 
 [dev-packages]
 
