@@ -12,6 +12,11 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret')
 DEBUG = os.getenv('DJANGO_DEBUG', '1') == '1'
 ALLOWED_HOSTS = ['*']
 
+# CSRF trusted origins for production
+CSRF_TRUSTED_ORIGINS = [
+    'https://wms-q0jx.onrender.com',
+]
+
 INSTALLED_APPS = [
     # Django built-ins
     'django.contrib.admin',
