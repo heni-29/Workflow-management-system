@@ -1,0 +1,15 @@
+<!-- projects/templates/projects/detail.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Detail</title>
+</head>
+<body>
+    <h1>{{ project.name }}</h1>
+    <p>Description: {{ project.description }}</p>
+    <p>Created By: {{ project.created_by }}</p>
+    <a href="{% url 'project_dashboard' project.id %}">Dashboard</a>
+    <a href="{% url 'home' %}">Back to all projects</a>
+
+</body>
+</html>

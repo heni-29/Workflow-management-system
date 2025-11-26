@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-gray-900">Activity Feed</h1>
+  <p class="mt-2 text-sm text-gray-700">Recent updates and actions across all projects.</p>
+</div>
+
+<div class="flow-root">
+  <ul role="list" class="-mb-8">
+    {% for log in logs %}
+    <li>
+      <div class="relative pb-8">
+        {% if not forloop.last %}
+        <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+        {% endif %}
+        <div class="relative flex space-x-3">
+          <div>
+            <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+              <span class="text-white text-xs font-bold">{{ log.user.username|make_list|first|upper }}</span>
+            </span>
+          </div>
+          <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+            <div>
+              <p class="text-sm text-gray-500">
+                <span class="font-medium text-gray-900">{{ log.user.username }}</span>
+                {{ log.verb }}
+                {% if log.target_type %}
+                <span class="font-medium text-gray-900">{{ log.target_type }}</span>
+                {% endif %}
+              </p>
+              {% if log.detail %}
+              <div class="mt-2 text-sm text-gray-700 bg-gray-50 p-3 rounded-md border border-gray-100">
+                <pre class="whitespace-pre-wrap font-sans">{{ log.detail }}</pre>
+              </div>
+              {% endif %}
+            </div>
+            <div class="text-right text-sm whitespace-nowrap text-gray-500">
+              <time datetime="{{ log.timestamp|date:'c' }}">{{ log.timestamp|timesince }} ago</time>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+    {% empty %}
+    <li class="py-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">No activity yet</h3>
+      <p class="mt-1 text-sm text-gray-500">Activities will appear here as you work on projects.</p>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

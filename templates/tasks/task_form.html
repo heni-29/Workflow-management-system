@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 30px;
+  border-radius: 12px;
+  background-color: #f9fafb;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+">
+  <h1 style="
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 25px;
+    color: #1f2937;
+  ">
+    Create Task
+  </h1>
+
+  <form method="post" style="display: flex; flex-direction: column; gap: 16px;">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" style="
+      background-color: #2563eb;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    "
+    onmouseover="this.style.backgroundColor='#1d4ed8';"
+    onmouseout="this.style.backgroundColor='#2563eb';">
+      Save Task
+    </button>
+  </form>
+</div>
+{% endblock %}

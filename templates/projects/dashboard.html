@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-2xl font-bold">Dashboard: {{ project.name }}</h1>
+<div class="mt-4">
+  <div id="plotly-1">{{ graph_html|safe }}</div>
+</div>
+{% endblock %}
