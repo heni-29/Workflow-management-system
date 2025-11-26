@@ -9,3 +9,6 @@ python manage.py migrate
 
 # Create superuser using custom management command
 python manage.py create_superuser
+
+# Populate sample data
+python manage.py populate_data
