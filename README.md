@@ -31,7 +31,7 @@ A modern Django-based project management application with task tracking, activit
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/heni-29/Workflow-management-system
    cd workflow
    ```
 
@@ -145,10 +145,3 @@ workflow/
 ```bash
 python manage.py test
 ```
-
-## Contributing
-
-This is a portfolio project. Feel free to fork and customize for your own use!
-
-
----
