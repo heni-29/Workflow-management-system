@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ===== Kanban Styles ===== -->
+<style>
+    /* Column scroll */
+    .kanban-col {
+        min-height: 520px;
+        transition: background 0.2s;
+    }
+
+    .kanban-col.drag-over {
+        background: rgba(99, 102, 241, 0.06);
+        border-color: rgba(99, 102, 241, 0.4) !important;
+    }
+
+    /* Task card */
+    .task-card {
+        cursor: grab;
+        user-select: none;
+        transition: box-shadow 0.15s, transform 0.15s;
+        border-left: 4px solid transparent;
+    }
+
+    .task-card:active {
+        cursor: grabbing;
+    }
+
+    .task-card.sortable-ghost {
+        opacity: 0.35;
+        transform: scale(0.97);
+    }
+
+    .task-card.sortable-drag {
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18) !important;
+        transform: rotate(1.5deg) scale(1.03);
+    }
+
+    .task-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+        transform: translateY(-2px);
+    }
+
+    /* Priority border colours */
+    .priority-high {
+        border-left-color: #ef4444;
+    }
+
+    .priority-medium {
+        border-left-color: #f59e0b;
+    }
+
+    .priority-low {
+        border-left-color: #6b7280;
+    }
+
+    /* Drop indicator pulse */
+    @keyframes pulse-ring {
+        0% {
+            box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+        }
+    }
+
+    .drop-pulse {
+        animation: pulse-ring 0.6s ease-out;
+    }
+
+    /* Toast */
+    #kb-toast {
+        transition: opacity 0.3s, transform 0.3s;
+        pointer-events: none;
+    }
+
+    #kb-toast.hidden {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    /* Scrollable column body */
+    .col-body {
+        max-height: calc(100vh - 280px);
+        overflow-y: auto;
+    }
+
+    .col-body::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .col-body::-webkit-scrollbar-thumb {
+        background: #e5e7eb;
+        border-radius: 4px;
+    }
+</style>
+
+<!-- ===== Page Header ===== -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+            </svg>
+            Kanban Board
+        </h1>
+        <p class="mt-1 text-sm text-gray-500">
+            {% if project %}
+            Viewing <span class="font-semibold text-gray-700">{{ project.name }}</span>
+            {% else %}
+            All projects &mdash; drag cards between columns to update task status
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex items-center gap-3 flex-wrap">
+        <!-- Project filter -->
+        <form method="get" id="project-filter-form">
+            <select id="project-select" name="p" onchange="
+          var val = this.value;
+          window.location = val ? '/tasks/kanban/' + val + '/' : '/tasks/kanban/';
+        " class="block rounded-md border border-gray-300 py-2 pl-3 pr-8 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white shadow-sm">
+                <option value="">All Projects</option>
+                {% for p in all_projects %}
+                <option value="{{ p.id }}" {% if project and project.id == p.id %}selected{% endif %}>{{ p.name }}
+                </option>
+
+                {% endfor %}
+            </select>
+        </form>
+
+        <a href="{% url 'task_create' %}"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Task
+        </a>
+
+        <a href="{% url 'task_list' %}"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+            List View
+        </a>
+    </div>
+</div>
+
+<!-- ===== Kanban Columns ===== -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+    {% for col in columns %}
+    {% include "tasks/_kanban_column.html" with hdr_bg=col.hdr_bg hdr_text=col.hdr_text badge_bg=col.badge_bg badge_text=col.badge_text col_border=col.col_border dot_color=col.dot_color %}
+    {% endfor %}
+
+</div>
+
+<!-- ===== Toast notification ===== -->
+<div id="kb-toast"
+    class="hidden fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-gray-900 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-2xl">
+    <svg id="kb-toast-icon" class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor"
+        viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    </svg>
+    <span id="kb-toast-msg">Status updated</span>
+</div>
+
+<!-- ===== SortableJS CDN ===== -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+<script>
+    (() {
+        'use strict';
+
+        // CSRF helper
+        function getCookie(name) {
+            let val = null;
+            document.cookie.split(';').forEach(c => {
+                c = c.trim();
+                if (c.startsWith(name + '=')) val = decodeURIComponent(c.slice(name.length + 1));
+            });
+            return val;
+        }
+
+        // Toast helper
+        let toastTimer = null;
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('kb-toast');
+            const icon = document.getElementById('kb-toast-icon');
+            const msgEl = document.getElementById('kb-toast-msg');
+            msgEl.textContent = msg;
+            icon.className = `w-5 h-5 flex-shrink-0 ${isError ? 'text-red-400' : 'text-green-400'}`;
+            toast.classList.remove('hidden');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.add('hidden'), 2800);
+        }
+
+        // Update status via POST to our Django endpoint
+        async function updateTaskStatus(taskId, newStatus) {
+            const url = `/tasks/${taskId}/update-status/`;
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({}));
+                throw new Error(data.error || 'Server error');
+            }
+            return resp.json();
+        }
+
+        // Initialise SortableJS on every column body
+        document.querySelectorAll('.kanban-col').forEach(col => {
+            Sortable.create(col, {
+                group: 'kanban',            // share cards across all columns
+                draggable: '.task-card',    // ONLY intercept mousedown on actual cards
+                animation: 200,
+                delay: 150,                 // 150ms hold before drag starts — quick clicks pass through as normal clicks
+                delayOnTouchOnly: false,
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                chosenClass: 'sortable-chosen',
+
+                onAdd(evt) {
+                    const card = evt.item;
+                    const taskId = card.dataset.taskId;
+                    const newStatus = evt.to.dataset.status;
+
+                    // Animate column
+                    evt.to.classList.add('drop-pulse');
+                    setTimeout(() => evt.to.classList.remove('drop-pulse'), 600);
+
+                    // Update empty-state visibility
+                    updateEmptyState(evt.from);
+                    updateEmptyState(evt.to);
+
+                    updateTaskStatus(taskId, newStatus)
+                        .then(() => showToast(`Moved to "${evt.to.dataset.label}"`))
+                        .catch(err => {
+                            showToast(err.message, true);
+                            // Rollback: move card back to original column
+                            evt.from.insertBefore(card, evt.from.children[evt.oldIndex] || null);
+                            updateEmptyState(evt.from);
+                            updateEmptyState(evt.to);
+                        });
+                },
+            });
+        });
+
+        // Show/hide the "No tasks" empty placeholder
+        function updateEmptyState(col) {
+            const cards = col.querySelectorAll('.task-card');
+            const empty = col.querySelector('.empty-placeholder');
+            if (!empty) return;
+            empty.style.display = cards.length === 0 ? 'block' : 'none';
+        }
+
+        // Initialise empty states on page load
+        document.querySelectorAll('.kanban-col').forEach(col => updateEmptyState(col));
+
+    })();
+</script>
+
+{% endblock %}

@@ -28,13 +28,38 @@ INSTALLED_APPS = [
 
     # third-party
     'rest_framework',
+    'rest_framework.authtoken',
 
     # local apps
     'users',
     'projects',
     'tasks',
     'activities',
+    'api',
 ]
+
+REST_FRAMEWORK = {
+    # Authentication: token header OR session cookie (for browsable API)
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    # All endpoints require login by default
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    # Return JSON by default; browsable HTML available in browsers
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    # Consistent pagination across all list endpoints
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    # ISO 8601 datetime format
+    'DATETIME_FORMAT': '%Y-%m-%dT%H:%M:%SZ',
+    'DATE_FORMAT': '%Y-%m-%d',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

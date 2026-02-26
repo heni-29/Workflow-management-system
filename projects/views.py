@@ -9,6 +9,7 @@ def home(request):
     projects = Project.objects.all()[:50]
     return render(request, 'projects/home.html', {'projects': projects})
 
+@login_required
 def project_detail(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     return render(request, 'projects/detail.html', {'project': project})
@@ -19,6 +20,7 @@ from django.db.models import Count
 import plotly.graph_objects as go
 import plotly.io as pio
 
+@login_required
 def project_dashboard(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     tasks = Task.objects.filter(project=project)
