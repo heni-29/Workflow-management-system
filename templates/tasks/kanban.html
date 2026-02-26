@@ -178,7 +178,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
 <script>
-    (() {
+    (function () {
         'use strict';
 
         // CSRF helper
@@ -198,7 +198,7 @@
             const icon = document.getElementById('kb-toast-icon');
             const msgEl = document.getElementById('kb-toast-msg');
             msgEl.textContent = msg;
-            icon.className = `w-5 h-5 flex-shrink-0 ${isError ? 'text-red-400' : 'text-green-400'}`;
+            icon.setAttribute('class', `w-5 h-5 flex-shrink-0 ${isError ? 'text-red-400' : 'text-green-400'}`);
             toast.classList.remove('hidden');
             clearTimeout(toastTimer);
             toastTimer = setTimeout(() => toast.classList.add('hidden'), 2800);
@@ -271,7 +271,7 @@
         // Initialise empty states on page load
         document.querySelectorAll('.kanban-col').forEach(col => updateEmptyState(col));
 
-    })();
+    }());
 </script>
 
 {% endblock %}
