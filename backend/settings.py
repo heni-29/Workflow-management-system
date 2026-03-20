@@ -1,6 +1,7 @@
 # backend/settings.py
 import os
 from pathlib import Path
+from datetime import timedelta
 from dotenv import load_dotenv
 import dj_database_url
 
@@ -29,6 +30,8 @@ INSTALLED_APPS = [
     # third-party
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'corsheaders',
 
     # local apps
     'users',
@@ -39,9 +42,9 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
-    # Authentication: token header OR session cookie (for browsable API)
+    # Authentication: JWT Bearer header OR session cookie (browsable API)
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     # All endpoints require login by default
@@ -61,7 +64,17 @@ REST_FRAMEWORK = {
     'DATE_FORMAT': '%Y-%m-%d',
 }
 
+# JWT configuration
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',       # must be first
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -71,6 +84,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS — allow the Vite React dev server at port 3000
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -146,4 +166,3 @@ AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
-
