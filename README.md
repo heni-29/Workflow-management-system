@@ -1,147 +1,190 @@
-# Workflow - Project Management System
+# Workflow — Project Management System
 
-A modern Django-based project management application with task tracking, activity logging, and interactive dashboards.
+A full-stack project management application with a **Django REST Framework** backend and a **React** (Vite) frontend, featuring JWT authentication, interactive Recharts dashboards, and a clean dark-mode UI.
 
-## Features
+---
 
-- **Project Management**: Create and manage multiple projects with team members
-- **Task Tracking**: Track tasks with status (To Do, In Progress, Review, Done) and priority levels
-- **Interactive Dashboards**: Visualize task distribution with Plotly charts
-- **Activity Feed**: Timeline view of all project activities
-- **Modern UI**: Beautiful, responsive interface built with Tailwind CSS
-- **Secure Authentication**: Login-only access with CSRF protection
+## ✨ Features
 
-## Tech Stack
+- **Project Management** — Create and manage projects with team members and progress tracking
+- **Task Tracking** — Tasks with status (To Do → In Progress → Review → Done), priority levels, assignees, and due dates
+- **Interactive Dashboard** — Recharts bar + donut charts for task distribution across projects and statuses
+- **Activity Feed** — Paginated timeline of all project changes with color-coded action types
+- **JWT Authentication** — Stateless Bearer token auth with silent refresh; 8-hour access tokens, 7-day refresh tokens
+- **REST API** — Full DRF ViewSet API with filtering, search, ordering, and pagination
+- **Dark-mode UI** — Premium design system built from scratch in vanilla CSS
 
-- **Backend**: Django 5.2.7
-- **Database**: PostgreSQL (with SQLite fallback for development)
-- **Frontend**: HTML, Tailwind CSS 2.2.19
-- **Visualization**: Plotly 6.3.1
-- **API**: Django REST Framework 3.16.1
+---
 
-## Installation
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Backend** | Django 5.2.7 · Django REST Framework 3.16.1 |
+| **Auth** | `djangorestframework-simplejwt` (JWT Bearer tokens) |
+| **Database** | PostgreSQL (SQLite fallback for dev) |
+| **CORS** | `django-cors-headers` |
+| **Frontend** | React 18 · Vite (port 3000) |
+| **Charts** | Recharts |
+| **HTTP client** | Axios (with JWT interceptors + auto-refresh) |
+| **Routing** | React Router v7 |
+| **Icons** | Lucide React |
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.13
-- PostgreSQL (optional, can use SQLite)
-- pipenv (recommended) or pip
+- Python 3.13+
+- Node.js 18+
+- PostgreSQL (or use SQLite for dev)
 
-### Setup Instructions
+### 1 — Clone & configure
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/heni-29/Workflow-management-system
-   cd workflow
-   ```
+```bash
+git clone https://github.com/heni-29/Workflow-management-system
+cd workflow
+```
 
-2. **Install dependencies**
-   
-   Using pipenv (recommended):
-   ```bash
-   pipenv install
-   pipenv shell
-   ```
-   
-   Or using pip:
-   ```bash
-   pip install -r requirements.txt
-   ```
+Create a `.env` file in the project root:
 
-3. **Configure environment variables**
-   
-   Create a `.env` file in the project root:
-   ```env
-   DJANGO_SECRET_KEY=your-secret-key-here
-   DJANGO_DEBUG=1
-   POSTGRES_HOST=sqlite  # Use 'sqlite' for SQLite, or 'localhost' for PostgreSQL
-   ```
+```env
+DJANGO_SECRET_KEY=your-secret-key-here
+DJANGO_DEBUG=1
+POSTGRES_HOST=sqlite        # 'sqlite' for SQLite, 'localhost' for PostgreSQL
+```
 
-4. **Run database migrations**
-   ```bash
-   python manage.py migrate
-   ```
+### 2 — Backend setup
 
-5. **Create a superuser (optional)**
-   ```bash
-   python manage.py createsuperuser
-   ```
-   
-   Or use the default credentials provided below.
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser   # or use default credentials below
+```
 
-6. **Start the development server**
-   ```bash
-   python manage.py runserver
-   ```
+### 3 — Frontend setup
 
-7. **Access the application**
-   
-   Open your browser and navigate to: `http://127.0.0.1:8000`
+```bash
+cd frontend
+npm install
+```
 
-## Default Login Credentials
+### 4 — Run the stack
 
-- **Username**: `djangoadmin`
-- **Password**: `12admin34`
+```bash
+# Terminal 1 — Django API (http://localhost:8000)
+python manage.py runserver 8000
 
-## Usage
+# Terminal 2 — React dev server (http://localhost:3000)
+cd frontend && npm run dev
+```
 
-### Projects
-- View all projects on the homepage
-- Click on a project card to see details
-- Access project dashboard to view task statistics
+Open **http://localhost:3000** — Vite proxies all `/api` requests to Django on port 8000.
 
-### Tasks
-- Navigate to "Tasks" to see all tasks across projects
-- Create new tasks with the "Create Task" button
-- Tasks are color-coded by status:
-  - Gray: To Do
-  - Blue: In Progress
-  - Yellow: Review
-  - Green: Done
+---
 
-### Activities
-- View the activity timeline to track all changes
-- See who made changes and when
+## 🔑 Default Login
 
-## Project Structure
+| Field | Value |
+|---|---|
+| Username | `djangoadmin` |
+| Password | `12admin34` |
+
+---
+
+## 📡 REST API Endpoints
+
+All endpoints require `Authorization: Bearer <access_token>`.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/token/` | Login → receive access + refresh tokens |
+| `POST` | `/api/auth/token/refresh/` | Exchange refresh token for new access token |
+| `POST` | `/api/auth/token/verify/` | Verify a token |
+| `GET` | `/api/projects/` | List all projects |
+| `POST` | `/api/projects/` | Create a project |
+| `GET` | `/api/projects/:id/` | Get a single project |
+| `PATCH` | `/api/projects/:id/` | Update a project |
+| `GET` | `/api/projects/:id/tasks/` | All tasks for a project |
+| `GET` | `/api/projects/:id/stats/` | Task counts by status |
+| `GET` | `/api/tasks/` | List tasks (filter by `status`, `project`, `priority`, `assignee`) |
+| `POST` | `/api/tasks/` | Create a task |
+| `PATCH` | `/api/tasks/:id/` | Update a task |
+| `PATCH` | `/api/tasks/:id/set_status/` | Quick status change |
+| `GET` | `/api/tasks/my/` | Tasks assigned to the current user |
+| `GET` | `/api/activities/` | Paginated activity log |
+| `GET` | `/api/users/me/` | Current authenticated user |
+
+The **browsable DRF API** is also available at `http://localhost:8000/api/` for manual exploration.
+
+---
+
+## 🗂 Project Structure
 
 ```
 workflow/
-├── backend/          # Django settings and configuration
-├── projects/         # Projects app
-├── tasks/            # Tasks app
-├── activities/       # Activity logging app
-├── users/            # User authentication
-├── templates/        # HTML templates
-│   ├── base.html
-│   ├── projects/
-│   ├── tasks/
-│   ├── activities/
-│   └── registration/
-├── manage.py
+├── backend/              # Django settings · WSGI/ASGI
+├── api/                  # DRF ViewSets, serializers, JWT URLs
+├── projects/             # Project model, views, URLs
+├── tasks/                # Task model (status/priority choices)
+├── activities/           # ActivityLog model (JSONField detail)
+├── users/                # Custom User model · management commands
+├── templates/            # Legacy Django HTML templates
 ├── requirements.txt
-└── Pipfile
+├── manage.py
+└── frontend/             # Vite + React SPA
+    ├── vite.config.js    # port 3000, /api proxy → :8000
+    └── src/
+        ├── api/
+        │   └── client.js         # Axios + JWT interceptors + auto-refresh
+        ├── context/
+        │   └── AuthContext.jsx   # Login / logout / persistent session
+        ├── components/
+        │   ├── Sidebar.jsx
+        │   ├── Badges.jsx        # StatusBadge, PriorityBadge
+        │   └── ProtectedRoute.jsx
+        ├── pages/
+        │   ├── LoginPage.jsx
+        │   ├── DashboardPage.jsx
+        │   ├── ProjectsPage.jsx
+        │   ├── ProjectDetailPage.jsx
+        │   ├── TasksPage.jsx
+        │   └── ActivityPage.jsx
+        ├── utils/time.js         # formatRelative, formatDate
+        └── index.css             # Design system (dark theme tokens)
 ```
 
-## Development
+---
 
-### Database Options
+## 🗃 Database Options
 
-**SQLite (Default for Development)**
-- Set `POSTGRES_HOST=sqlite` in `.env` <br>
-- No additional setup required
+**SQLite** (default for development)
+- Set `POSTGRES_HOST=sqlite` in `.env` — no extra setup needed
 
-**PostgreSQL (Recommended for Production)**
-- Install PostgreSQL
-- Create a database named `workflow_db`
-- Update `.env`:
-  ```env
-  POSTGRES_HOST=localhost
-  ```
-- Update `backend/settings.py` with your PostgreSQL credentials if needed
+**PostgreSQL** (recommended for production)
+```env
+POSTGRES_HOST=localhost
+POSTGRES_DB=workflow_db
+POSTGRES_USER=workflow_user
+POSTGRES_PASSWORD=your-password
+POSTGRES_PORT=5432
+```
 
-### Running Tests
+---
+
+## 🧪 Running Tests
 
 ```bash
 python manage.py test
+```
+
+---
+
+## 📦 Seed Data
+
+Populate the database with realistic CS student projects:
+
+```bash
+python manage.py populate_data
 ```
