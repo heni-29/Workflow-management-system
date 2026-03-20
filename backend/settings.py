@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
+    'channels',
 
     # local apps
     'users',
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'tasks',
     'activities',
     'api',
+    'websockets',
 ]
 
 REST_FRAMEWORK = {
@@ -111,6 +113,22 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+ASGI_APPLICATION = 'backend.asgi.application'
+
+# Channel layer — Redis in production, in-memory for local dev
+if os.getenv('REDIS_URL'):
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [os.getenv('REDIS_URL')]},
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        }
+    }
 
 # Database configuration
 if os.getenv('DATABASE_URL'):

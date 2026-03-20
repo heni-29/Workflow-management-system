@@ -1,12 +1,13 @@
 // src/pages/ProjectDetailPage.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { Plus, ArrowLeft, X } from 'lucide-react';
+import { Plus, ArrowLeft, X, Wifi, WifiOff } from 'lucide-react';
 import { projectsApi, tasksApi, usersApi } from '../api/client';
 import { StatusBadge, PriorityBadge } from '../components/Badges';
+import { useProjectWebSocket } from '../hooks/useProjectWebSocket';
 import { formatDate } from '../utils/time';
 
 const STATUS_OPTIONS = [
@@ -122,7 +123,45 @@ export default function ProjectDetailPage() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [wsStatus, setWsStatus] = useState('connecting'); // 'connecting' | 'live' | 'offline'
+    const [liveFlash, setLiveFlash] = useState(null); // task id that just updated
 
+    // ── Real-time task updates via WebSocket ───────────────────────────────────
+    const handleTaskUpdate = useCallback((msg) => {
+        // msg = { type: 'task_update', task_id, status, title, priority, assignee, due_date, updated_at }
+        setTasks(prev => prev.map(t =>
+            t.id === msg.task_id
+                ? {
+                    ...t,
+                    status: msg.status,
+                    priority: msg.priority,
+                    assignee: msg.assignee ? { username: msg.assignee } : t.assignee,
+                    due_date: msg.due_date ?? t.due_date,
+                    updated_at: msg.updated_at,
+                }
+                : t
+        ));
+        // Flash the updated row yellow for 2 seconds
+        setLiveFlash(msg.task_id);
+        setTimeout(() => setLiveFlash(null), 2000);
+        setWsStatus('live');
+    }, []);
+
+    const wsRef = useProjectWebSocket(id, handleTaskUpdate);
+
+    // Detect WS open/close to show the live indicator
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const ws = wsRef.current;
+            if (!ws) return;
+            if (ws.readyState === WebSocket.OPEN) setWsStatus('live');
+            else if (ws.readyState === WebSocket.CLOSED) setWsStatus('offline');
+            else setWsStatus('connecting');
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [wsRef]);
+
+    // ── Initial data load ──────────────────────────────────────────────────────
     useEffect(() => {
         Promise.all([
             projectsApi.get(id),
@@ -160,9 +199,25 @@ export default function ProjectDetailPage() {
                         <p className="page-subtitle">{project.description}</p>
                     )}
                 </div>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                    <Plus size={16} /> Add Task
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    {/* Live / offline indicator */}
+                    <span
+                        title={wsStatus === 'live' ? 'Real-time updates active' : 'WebSocket disconnected'}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: 5,
+                            fontSize: '0.75rem',
+                            color: wsStatus === 'live' ? 'var(--success)' : 'var(--text-muted)',
+                        }}
+                    >
+                        {wsStatus === 'live'
+                            ? <><Wifi size={14} /> Live</>
+                            : <><WifiOff size={14} /> {wsStatus === 'connecting' ? 'Connecting…' : 'Offline'}</>
+                        }
+                    </span>
+                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                        <Plus size={16} /> Add Task
+                    </button>
+                </div>
             </div>
 
             {/* Stats + chart */}
@@ -212,6 +267,11 @@ export default function ProjectDetailPage() {
             <div className="card" style={{ padding: 0 }}>
                 <div className="card-header" style={{ padding: '1.25rem 1.5rem' }}>
                     <span className="card-title">Tasks ({tasks.length})</span>
+                    {liveFlash && (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--warning)', animation: 'fadeIn 0.2s' }}>
+                            ✦ Task updated live
+                        </span>
+                    )}
                 </div>
                 <div className="table-wrap">
                     <table>
@@ -230,7 +290,15 @@ export default function ProjectDetailPage() {
                                     No tasks yet. Add one!
                                 </td></tr>
                             ) : tasks.map(t => (
-                                <tr key={t.id}>
+                                <tr
+                                    key={t.id}
+                                    style={{
+                                        transition: 'background 0.5s',
+                                        background: liveFlash === t.id
+                                            ? 'rgba(245, 158, 11, 0.12)'  // amber flash on live update
+                                            : undefined,
+                                    }}
+                                >
                                     <td>
                                         <div style={{ fontWeight: 500 }}>{t.title}</div>
                                         {t.is_overdue && <span className="overdue-tag">Overdue</span>}

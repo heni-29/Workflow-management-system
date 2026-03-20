@@ -3,6 +3,8 @@ Django==5.2.7
 djangorestframework==3.16.1
 djangorestframework-simplejwt
 django-cors-headers
+channels
+channels-redis
 narwhals==2.7.0
 packaging==25.0
 plotly==6.3.1
@@ -10,5 +12,6 @@ psycopg2-binary==2.9.11
 sqlparse==0.5.3
 python-dotenv
 gunicorn
+daphne
 whitenoise
 dj-database-url

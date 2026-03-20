@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 from projects.models import Project
 from tasks.models import Task, TaskStatus
@@ -19,6 +21,37 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+
+# ── WebSocket broadcast helper ─────────────────────────────────────────────────
+
+def broadcast_task_update(task, serializer_context=None):
+    """
+    Push a task-update event to all WebSocket clients watching this project.
+    Called synchronously from DRF views; uses async_to_sync to reach the layer.
+    """
+    channel_layer = get_channel_layer()
+    if channel_layer is None:
+        return
+    group_name = f"project_{task.project_id}"
+    payload = {
+        "type": "task.updated",   # Channels maps '.' → '_' for method name
+        "data": {
+            "type":       "task_update",
+            "task_id":    task.id,
+            "title":      task.title,
+            "status":     task.status,
+            "priority":   task.priority,
+            "assignee":   task.assignee.username if task.assignee else None,
+            "due_date":   str(task.due_date) if task.due_date else None,
+            "updated_at": task.updated_at.isoformat(),
+        },
+    }
+    try:
+        async_to_sync(channel_layer.group_send)(group_name, payload)
+    except Exception:
+        pass  # Don't crash the REST response if the channel layer is unavailable
+
 
 
 # ─── Project ViewSet ───────────────────────────────────────────────────────────
@@ -144,7 +177,12 @@ class TaskViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(reporter=self.request.user)
+        task = serializer.save(reporter=self.request.user)
+        broadcast_task_update(task)
+
+    def perform_update(self, serializer):
+        task = serializer.save()
+        broadcast_task_update(task)
 
     @action(detail=True, methods=['patch'], url_path='set_status')
     def set_status(self, request, pk=None):
@@ -154,6 +192,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         ser.is_valid(raise_exception=True)
         task.status = ser.validated_data['status']
         task.save(update_fields=['status', 'updated_at'])
+        broadcast_task_update(task)   # ← push to all WebSocket clients
         return Response(TaskSerializer(task, context={'request': request}).data)
 
     @action(detail=False, methods=['get'], url_path='my')
