@@ -1,4 +1,4 @@
-# Workflow — Project Management System
+# Workflow - Project Management System
 
 A full-stack project management application with a **Django REST Framework** backend and a **React** (Vite) frontend, featuring JWT authentication, interactive Recharts dashboards, and a clean dark-mode UI.
 
@@ -6,13 +6,13 @@ A full-stack project management application with a **Django REST Framework** bac
 
 ## Features
 
-- **Project Management** — Create and manage projects with team members and progress tracking
-- **Task Tracking** — Tasks with status (To Do → In Progress → Review → Done), priority levels, assignees, and due dates
-- **Interactive Dashboard** — Recharts bar + donut charts for task distribution across projects and statuses
-- **Activity Feed** — Paginated timeline of all project changes with color-coded action types
-- **JWT Authentication** — Stateless Bearer token auth with silent refresh; 8-hour access tokens, 7-day refresh tokens
-- **REST API** — Full DRF ViewSet API with filtering, search, ordering, and pagination
-- **Dark-mode UI** — Premium design system built from scratch in vanilla CSS
+- **Project Management** - Create and manage projects with team members and progress tracking
+- **Task Tracking** - Tasks with status (To Do → In Progress → Review → Done), priority levels, assignees, and due dates
+- **Interactive Dashboard** - Recharts bar + donut charts for task distribution across projects and statuses
+- **Activity Feed** - Paginated timeline of all project changes with color-coded action types
+- **JWT Authentication** - Stateless Bearer token auth with silent refresh; 8-hour access tokens, 7-day refresh tokens
+- **REST API** - Full DRF ViewSet API with filtering, search, ordering, and pagination
+- **Dark-mode UI** - Premium design system built from scratch in vanilla CSS
 
 ---
 
