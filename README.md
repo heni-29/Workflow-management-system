@@ -4,7 +4,7 @@ A full-stack project management application with a **Django REST Framework** bac
 
 ---
 
-## ✨ Features
+## Features
 
 - **Project Management** — Create and manage projects with team members and progress tracking
 - **Task Tracking** — Tasks with status (To Do → In Progress → Review → Done), priority levels, assignees, and due dates
@@ -16,7 +16,7 @@ A full-stack project management application with a **Django REST Framework** bac
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -32,7 +32,7 @@ A full-stack project management application with a **Django REST Framework** bac
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -40,7 +40,7 @@ A full-stack project management application with a **Django REST Framework** bac
 - Node.js 18+
 - PostgreSQL (or use SQLite for dev)
 
-### 1 — Clone & configure
+### 1 - Clone & configure
 
 ```bash
 git clone https://github.com/heni-29/Workflow-management-system
@@ -55,7 +55,7 @@ DJANGO_DEBUG=1
 POSTGRES_HOST=sqlite        # 'sqlite' for SQLite, 'localhost' for PostgreSQL
 ```
 
-### 2 — Backend setup
+### 2 - Backend setup
 
 ```bash
 pip install -r requirements.txt
@@ -63,14 +63,14 @@ python manage.py migrate
 python manage.py createsuperuser   # or use default credentials below
 ```
 
-### 3 — Frontend setup
+### 3 - Frontend setup
 
 ```bash
 cd frontend
 npm install
 ```
 
-### 4 — Run the stack
+### 4 - Run the stack
 
 ```bash
 # Terminal 1 — Django API (http://localhost:8000)
@@ -84,7 +84,7 @@ Open **http://localhost:3000** — Vite proxies all `/api` requests to Django on
 
 ---
 
-## 🔑 Default Login
+## Default Login
 
 | Field | Value |
 |---|---|
@@ -93,7 +93,7 @@ Open **http://localhost:3000** — Vite proxies all `/api` requests to Django on
 
 ---
 
-## 📡 REST API Endpoints
+## REST API Endpoints
 
 All endpoints require `Authorization: Bearer <access_token>`.
 
@@ -120,7 +120,7 @@ The **browsable DRF API** is also available at `http://localhost:8000/api/` for 
 
 ---
 
-## 🗂 Project Structure
+## Project Structure
 
 ```
 workflow/
@@ -157,7 +157,7 @@ workflow/
 
 ---
 
-## 🗃 Database Options
+## Database Options
 
 **SQLite** (default for development)
 - Set `POSTGRES_HOST=sqlite` in `.env` — no extra setup needed
@@ -173,7 +173,7 @@ POSTGRES_PORT=5432
 
 ---
 
-## 🧪 Running Tests
+## Running Tests
 
 ```bash
 python manage.py test
@@ -181,7 +181,7 @@ python manage.py test
 
 ---
 
-## 📦 Seed Data
+## Seed Data
 
 Populate the database with realistic CS student projects:
 
