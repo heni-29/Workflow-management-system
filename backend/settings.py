@@ -57,7 +57,7 @@ REST_FRAMEWORK = {
     ],
     # All endpoints require login by default
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
     # Return JSON by default; browsable HTML available in browsers
     'DEFAULT_RENDERER_CLASSES': [

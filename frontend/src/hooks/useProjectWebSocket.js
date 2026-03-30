@@ -5,9 +5,6 @@
  * Opens a WebSocket connection to ws://localhost:8000/ws/projects/<id>/
  * and calls onTaskUpdate(data) whenever the server pushes a task_update event.
  *
- * Auth: the JWT access token is passed as a query param because WebSocket
- * connections can't carry Authorization headers.
- *
  * The hook auto-reconnects on clean close (code 1000/1001) but NOT on auth
  * failure (code 4001) or permanent errors.
  */
@@ -42,10 +39,7 @@ export function useProjectWebSocket(projectId, onTaskUpdate) {
     const connect = useCallback(() => {
         if (!projectId || !isMounted.current) return;
 
-        const token = localStorage.getItem('access_token');
-        if (!token) return;
-
-        const url = `${WS_BASE}/ws/projects/${projectId}/?token=${token}`;
+        const url = `${WS_BASE}/ws/projects/${projectId}/`;
         const ws = new WebSocket(url);
         wsRef.current = ws;
 

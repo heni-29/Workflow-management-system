@@ -1,42 +1,29 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authApi, usersApi } from '../api/client';
 
 const AuthContext = createContext(null);
 
+const GUEST_USER = {
+    id: null,
+    username: 'guest',
+    first_name: 'Guest',
+    last_name: '',
+    role: 'Viewer',
+};
+
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
+    const [user] = useState(GUEST_USER);
     const [loading, setLoading] = useState(true);
 
-    // Restore session on mount
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            usersApi.me()
-                .then(({ data }) => setUser(data))
-                .catch(() => {
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                })
-                .finally(() => setLoading(false));
-        } else {
-            setLoading(false);
-        }
+        setLoading(false);
     }, []);
 
-    const login = async (username, password) => {
-        const { data } = await authApi.login(username, password);
-        localStorage.setItem('access_token', data.access);
-        localStorage.setItem('refresh_token', data.refresh);
-        const me = await usersApi.me();
-        setUser(me.data);
-        return me.data;
-    };
+    const login = async () => GUEST_USER;
 
     const logout = () => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        setUser(null);
     };
 
     return (

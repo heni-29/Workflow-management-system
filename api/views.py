@@ -2,7 +2,7 @@
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from channels.layers import get_channel_layer
@@ -70,7 +70,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     stats  GET  /api/projects/{id}/stats/        <- bonus action
     """
     serializer_class   = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends    = [filters.SearchFilter, filters.OrderingFilter]
     search_fields      = ['name', 'description']
     ordering_fields    = ['name', 'created_at', 'updated_at']
@@ -85,7 +85,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        user = self.request.user if self.request.user.is_authenticated else None
+        serializer.save(created_by=user)
 
     @action(detail=True, methods=['get'], url_path='tasks')
     def tasks(self, request, pk=None):
@@ -138,7 +139,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     my_tasks GET  /api/tasks/my/                    <- tasks assigned to me
     """
     serializer_class   = TaskSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends    = [filters.SearchFilter, filters.OrderingFilter]
     search_fields      = ['title', 'description', 'project__name']
     ordering_fields    = ['created_at', 'updated_at', 'due_date', 'priority', 'status']
@@ -177,7 +178,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        task = serializer.save(reporter=self.request.user)
+        reporter = self.request.user if self.request.user.is_authenticated else None
+        task = serializer.save(reporter=reporter)
         broadcast_task_update(task)
 
     def perform_update(self, serializer):
@@ -198,6 +200,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='my')
     def my_tasks(self, request):
         """GET /api/tasks/my/ — tasks assigned to the current user."""
+        if not request.user.is_authenticated:
+            return Response([])
         tasks = self.get_queryset().filter(assignee=request.user)
         serializer = self.get_serializer(tasks, many=True)
         return Response(serializer.data)
@@ -213,7 +217,7 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
     retrieve GET /api/activities/{id}/
     """
     serializer_class   = ActivityLogSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends    = [filters.OrderingFilter]
     ordering_fields    = ['timestamp']
     ordering           = ['-timestamp']
@@ -245,7 +249,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     me       GET /api/users/me/
     """
     serializer_class   = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends    = [filters.SearchFilter, filters.OrderingFilter]
     search_fields      = ['username', 'email', 'first_name', 'last_name']
     ordering_fields    = ['username', 'date_joined']
@@ -257,5 +261,13 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'], url_path='me')
     def me(self, request):
         """GET /api/users/me/ — returns the currently authenticated user."""
+        if not request.user.is_authenticated:
+            return Response({
+                'id': None,
+                'username': 'guest',
+                'email': '',
+                'first_name': 'Guest',
+                'last_name': '',
+            })
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)

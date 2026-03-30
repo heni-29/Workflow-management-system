@@ -11,7 +11,6 @@ calls broadcast_task_update(), which channel_layer.group_send()s a
 """
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.contrib.auth.models import AnonymousUser
 
 
 class TaskConsumer(AsyncWebsocketConsumer):
@@ -19,12 +18,6 @@ class TaskConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.project_id = self.scope["url_route"]["kwargs"]["project_id"]
         self.group_name = f"project_{self.project_id}"
-
-        # Reject unauthenticated connections
-        user = self.scope.get("user")
-        if not user or isinstance(user, AnonymousUser):
-            await self.close(code=4001)
-            return
 
         # Join the project's channel group
         await self.channel_layer.group_add(self.group_name, self.channel_name)
