@@ -3,13 +3,14 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard, FolderKanban, CheckSquare, Activity,
-    LogOut, Workflow
+    LogOut, Workflow, KanbanSquare
 } from 'lucide-react';
 
 const links = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/projects', label: 'Projects', icon: FolderKanban },
     { to: '/tasks', label: 'Tasks', icon: CheckSquare },
+    { to: '/kanban', label: 'Kanban', icon: KanbanSquare },
     { to: '/activity', label: 'Activity', icon: Activity },
 ];
 

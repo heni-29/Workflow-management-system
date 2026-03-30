@@ -1,7 +1,4 @@
-# activity/urls.py
-from django.urls import path
-from . import views
+# activities/urls.py
+# Template-based URLs removed - use REST API at /api/activities/ instead
 
-urlpatterns = [
-    path('', views.activity_feed, name='activity_feed'),
-]
+urlpatterns = []

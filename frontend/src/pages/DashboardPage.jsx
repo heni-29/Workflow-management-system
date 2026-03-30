@@ -69,7 +69,7 @@ export default function DashboardPage() {
             <div className="page-header">
                 <div>
                     <h1 className="page-title">
-                        Good morning, {user?.first_name || user?.username} 👋
+                        Good morning, {user?.first_name || user?.username}!
                     </h1>
                     <p className="page-subtitle">Here's what's happening across your projects.</p>
                 </div>

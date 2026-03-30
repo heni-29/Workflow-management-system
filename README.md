@@ -53,7 +53,7 @@ cd frontend && npm run dev
 
 Open **http://localhost:3000**
 
-> `python manage.py runserver` works for REST-only dev but won't handle WebSockets.
+> The React app proxies `/api/*` and `/ws/*` requests to the Django backend at port 8000.
 
 ## Default Login
 

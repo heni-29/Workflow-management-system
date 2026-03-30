@@ -13,7 +13,25 @@
  */
 import { useEffect, useRef, useCallback } from 'react';
 
-const WS_BASE = 'ws://localhost:8000';
+const configuredApiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+const configuredWsBase = (import.meta.env.VITE_WS_BASE_URL || '').replace(/\/+$/, '');
+
+function getWsBase() {
+    if (configuredWsBase) {
+        return configuredWsBase;
+    }
+
+    if (configuredApiBase && /^https?:\/\//.test(configuredApiBase)) {
+        const apiUrl = new URL(configuredApiBase);
+        const wsProtocol = apiUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+        return `${wsProtocol}//${apiUrl.host}`;
+    }
+
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${wsProtocol}//${window.location.host}`;
+}
+
+const WS_BASE = getWsBase();
 const RECONNECT_DELAY_MS = 3000;
 
 export function useProjectWebSocket(projectId, onTaskUpdate) {
