@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+import os
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 
@@ -26,10 +27,13 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('   Done.\n'))
 
         # ── 2. Admin / owner ──────────────────────────────────────────
-        admin = User.objects.filter(username='djangoadmin').first()
+        owner_username = os.getenv('DJANGO_DEMO_OWNER_USERNAME', 'djangoadmin')
+        admin = User.objects.filter(username=owner_username).first()
+        if not admin:
+            admin = User.objects.filter(is_superuser=True).first()
         if not admin:
             self.stdout.write(self.style.ERROR(
-                'Superuser "djangoadmin" not found. Run create_superuser first.'
+                'No superuser found. Run create_superuser first.'
             ))
             return
 

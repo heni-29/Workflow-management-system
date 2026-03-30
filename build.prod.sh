@@ -10,3 +10,8 @@ python manage.py collectstatic --no-input
 if [ "${CREATE_SUPERUSER_ON_DEPLOY:-0}" = "1" ]; then
 	python manage.py create_superuser
 fi
+
+# Optional: seed demo data (destructive). Use once, then reset to 0.
+if [ "${POPULATE_DEMO_DATA_ON_DEPLOY:-0}" = "1" ]; then
+	python manage.py populate_data
+fi
